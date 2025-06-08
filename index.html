@@ -37,7 +37,7 @@
       transition: background 0.3s, color 0.3s;
     }
 
-    /* Sukces: 2× większe litery i zielone tło */
+    /* Sukces: większe litery, zielone tło */
     .good {
       background: #d8f5dd; color: #227733; border: 1px solid #87d39b;
       font-size: 2em; /* 2× większe */
@@ -68,10 +68,10 @@
   <!-- TABELA ODPOWIEDZI (łatwa edycja) -->
   <table id="answerTable">
     <tbody>
-      <tr><td>65</td><td>§22</td></tr>
-      <tr><td>207</td><td>§42</td></tr>
-      <tr><td>ABC123</td><td>§21</td></tr>
-      <tr><td>XYZ</td><td>§122</td></tr>
+      <tr><td>65</td><td>§12</td></tr>
+      <tr><td>207</td><td>§13</td></tr>
+      <tr><td>ABC123</td><td>§15</td></tr>
+      <tr><td>XYZ</td><td>§22</td></tr>
     </tbody>
   </table>
 
@@ -105,7 +105,7 @@
       }
 
       if (answer in answerMap) {
-        // Strzałka wskazująca na odpowiedź
+        // Strzałka wskazująca na odpowiedź (bez ptaszka)
         responseDiv.innerHTML = `&#10148; ${answerMap[answer]}`;
         responseDiv.classList.add('good');
       } else {
