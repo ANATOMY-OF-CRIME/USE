@@ -16,10 +16,10 @@
     }
     input::placeholder { color:#bbb; font-size:0.9em; letter-spacing:0.3em; }
 
-    /* Okrągły, wyraźny przycisk */
+    /* Przyciski */
     .check-btn {
       width:60px; height:60px; border-radius:50%; border:none;
-      background:#227733; color:#fff; font-size:1.8em; cursor:pointer;
+      background:#227733; color:#fff; font-size:2em; cursor:pointer;
       display:inline-flex; align-items:center; justify-content:center;
       transition: background 0.2s;
     }
@@ -31,6 +31,7 @@
       transition: background 0.3s, color 0.3s;
     }
 
+    .ok-icon { font-size:1.5em; margin-right:0.3em; }
     .good { background: #d8f5dd; color: #227733; border: 1px solid #87d39b; }
     .bad  { background: #fadada; color: transparent; border: 1px solid #e99898; }
     .neutral { background: #f1f1f1; color: #333; border: 1px solid #ccc; }
@@ -43,22 +44,19 @@
 <body>
   <div class="container">
     <!-- Ikona na górze -->
-    <img src="assets/GEARS.PNG" alt="Gears" class="top-icon" />
+    <img src="assets/GEARS.png" alt="Gears" class="top-icon" />
 
     <!-- Formularz -->
     <form id="codeForm" autocomplete="off">
       <input type="text" id="codeInput" maxlength="9" pattern="\d*" placeholder="······" autofocus required>
       <br>
-      <button type="submit" class="check-btn" aria-label="Sprawdź">&#10004;</button>
+      <!-- Strzałka zamiast ptaszka (ptaszek pojawi się tylko na sukces) -->
+      <button type="submit" class="check-btn" aria-label="Sprawdź">&#10148;</button>
     </form>
     <div id="response"></div>
   </div>
 
-  <!--
-    TABELA ODPOWIEDZI (łatwa edycja):
-    • Kolumna 1 – poprawna odpowiedź,
-    • Kolumna 2 – komunikat sukcesu (bez znaku paragrafu, JS doda go automatycznie)
-  -->
+  <!-- TABELA ODPOWIEDZI (łatwa edycja) -->
   <table id="answerTable">
     <tbody>
       <tr><td>65</td><td>Brawo! Przejdź do następnej karty!</td></tr>
@@ -110,10 +108,10 @@
       }
 
       if (answer in answerMap) {
-        responseDiv.innerHTML = `&para; ${answerMap[answer]}`;
+        responseDiv.innerHTML = `<span class='ok-icon'>&#10004;</span>${answerMap[answer]}`;
         responseDiv.classList.add('good');
       } else {
-        responseDiv.innerHTML = "<img src='assets/FAIL.PNG' alt='Fail' class='fail-icon'/>";
+        responseDiv.innerHTML = "<img src='assets/FAIL.png' alt='Fail' class='fail-icon'/>";
         responseDiv.classList.add('bad');
       }
 
