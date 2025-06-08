@@ -2,19 +2,32 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Wpisz odpowiedź</title>
+  <title>Kod odpowiedzi</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { font-family: Arial, sans-serif; background: #f9f9f9; }
     .container { max-width: 450px; margin: 60px auto; padding: 2em; background: #fff; border-radius: 14px; box-shadow: 0 4px 16px #0002; text-align:center; }
     .top-icon { display:block; margin:0 auto 1.2em; max-width:140px; }
 
-    input[type="text"] { font-size: 1.4em; padding: 0.3em; width: 95%; margin: 0.5em 0; }
-    button { font-size: 1.1em; padding: 0.4em 1.2em; border-radius: 8px; margin-top: 0.5em; }
+    /* Input z kropkowanym placeholderem */
+    input[type="text"] {
+      font-size: 1.6em; padding: 0.3em 0.4em; width: 95%; margin: 0.5em 0;
+      text-align:center; letter-spacing:0.15em;
+    }
+    input::placeholder { color:#bbb; font-size:0.9em; letter-spacing:0.3em; }
+
+    /* Okrągły, wyraźny przycisk */
+    .check-btn {
+      width:60px; height:60px; border-radius:50%; border:none;
+      background:#227733; color:#fff; font-size:1.8em; cursor:pointer;
+      display:inline-flex; align-items:center; justify-content:center;
+      transition: background 0.2s;
+    }
+    .check-btn:hover { background:#1b5d29; }
 
     #response {
       margin-top: 1.3em; font-size: 1.2em; min-height: 2em;
-      padding: 0.7em 1em; border-radius: 8px; display: inline-block;
+      padding: 0.7em 1em; border-radius: 8px; display: inline-block; max-width:100%;
       transition: background 0.3s, color 0.3s;
     }
 
@@ -22,32 +35,31 @@
     .bad  { background: #fadada; color: transparent; border: 1px solid #e99898; }
     .neutral { background: #f1f1f1; color: #333; border: 1px solid #ccc; }
     .fail-icon { display:block; margin:0 auto; max-width:120px; }
+
+    /* Ukryta tabela (do edycji odpowiedzi) */
+    #answerTable { display:none; }
   </style>
 </head>
 <body>
   <div class="container">
     <!-- Ikona na górze -->
-    <img src="GEARS.PNG" alt="Gears" class="top-icon" />
+    <img src="assets/GEARS.PNG" alt="Gears" class="top-icon" />
 
     <!-- Formularz -->
     <form id="codeForm" autocomplete="off">
-      <input type="text" id="codeInput" maxlength="9" pattern="\d*" placeholder="Wpisz odpowiedź..." autofocus required>
+      <input type="text" id="codeInput" maxlength="9" pattern="\d*" placeholder="······" autofocus required>
       <br>
-      <button type="submit">Sprawdź</button>
+      <button type="submit" class="check-btn" aria-label="Sprawdź">&#10004;</button>
     </form>
     <div id="response"></div>
   </div>
 
   <!--
-    EDYCJA TABELI:
-    • Każdy wiersz zawiera pierwszą kolumnę z poprawną odpowiedzią
-      i drugą kolumnę z komunikatem, który ma się pokazać.
-    • Dodaj/usuń wiersze, aby dostosować grę. Nie zmieniaj struktury JS.
+    TABELA ODPOWIEDZI (łatwa edycja):
+    • Kolumna 1 – poprawna odpowiedź,
+    • Kolumna 2 – komunikat sukcesu (bez znaku paragrafu, JS doda go automatycznie)
   -->
-  <table id="answerTable" style="display:none;">
-    <thead>
-      <tr><th>Odpowiedź</th><th>Komunikat sukcesu</th></tr>
-    </thead>
+  <table id="answerTable">
     <tbody>
       <tr><td>65</td><td>Brawo! Przejdź do następnej karty!</td></tr>
       <tr><td>207</td><td>Świetnie, kolejny etap za Tobą!</td></tr>
@@ -73,47 +85,38 @@
   </table>
 
   <script>
-    // Zbuduj mapę z danych w tabeli (łatwa edycja bez zmian JS)
-    function buildAnswerMap() {
-      const map = {};
-      document.querySelectorAll('#answerTable tbody tr').forEach(row => {
-        const cells = row.querySelectorAll('td');
-        const key = cells[0].textContent.trim();
-        const msg = cells[1].textContent.trim();
-        map[key] = msg;
-      });
-      return map;
-    }
-
-    const answerMap = buildAnswerMap();
+    // Buduj mapę { odpowiedź: komunikat }
+    const answerMap = {};
+    document.querySelectorAll('#answerTable tbody tr').forEach(row => {
+      const [keyCell, msgCell] = row.querySelectorAll('td');
+      answerMap[keyCell.textContent.trim()] = msgCell.textContent.trim();
+    });
 
     const form = document.getElementById('codeForm');
     const input = document.getElementById('codeInput');
     const responseDiv = document.getElementById('response');
 
-    form.addEventListener('submit', function (e) {
+    form.addEventListener('submit', e => {
       e.preventDefault();
       const answer = input.value.trim();
-      responseDiv.className = ""; // reset klas
+      responseDiv.className = "";
 
-      // Walidacja: 1‑9 cyfr
+      // Walidacja 1‑9 cyfr
       if (!/^\d{1,9}$/.test(answer)) {
-        responseDiv.textContent = "Odpowiedź musi być liczbą (1‑9 cyfr).";
+        responseDiv.textContent = "Odpowiedź musi być liczbą (1-9 cyfr).";
         responseDiv.classList.add('neutral');
         input.focus();
         return;
       }
 
-      // Sprawdzenie odpowiedzi w mapie
-      if (answerMap.hasOwnProperty(answer)) {
-        responseDiv.innerHTML = "&para; " + answerMap[answer];
+      if (answer in answerMap) {
+        responseDiv.innerHTML = `&para; ${answerMap[answer]}`;
         responseDiv.classList.add('good');
       } else {
-        responseDiv.innerHTML = "<img src='FAIL.PNG' alt='Fail' class='fail-icon'/>";
+        responseDiv.innerHTML = "<img src='assets/FAIL.PNG' alt='Fail' class='fail-icon'/>";
         responseDiv.classList.add('bad');
       }
 
-      // Przygotowanie do kolejnej próby
       input.value = "";
       input.focus();
     });
