@@ -29,7 +29,7 @@
     <!-- Ikona na górze -->
     <img src="GEARS.PNG" alt="Gears" class="top-icon" />
 
-    <!-- Formularz z jednym polem -->
+    <!-- Formularz -->
     <form id="codeForm" autocomplete="off">
       <input type="text" id="codeInput" maxlength="9" pattern="\d*" placeholder="Wpisz odpowiedź..." autofocus required>
       <br>
@@ -38,14 +38,54 @@
     <div id="response"></div>
   </div>
 
-  <script>
-    // Lista poprawnych odpowiedzi (w ustalonej kolejności)
-    const answers = [
-      "65", "207", "115", "5", "27", "275", "157", "146", "14", "55340252",
-      "291", "164", "245", "64229136", "21", "111", "40", "888", "9", "7"
-    ];
+  <!--
+    EDYCJA TABELI:
+    • Każdy wiersz zawiera pierwszą kolumnę z poprawną odpowiedzią
+      i drugą kolumnę z komunikatem, który ma się pokazać.
+    • Dodaj/usuń wiersze, aby dostosować grę. Nie zmieniaj struktury JS.
+  -->
+  <table id="answerTable" style="display:none;">
+    <thead>
+      <tr><th>Odpowiedź</th><th>Komunikat sukcesu</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>65</td><td>Brawo! Przejdź do następnej karty!</td></tr>
+      <tr><td>207</td><td>Świetnie, kolejny etap za Tobą!</td></tr>
+      <tr><td>115</td><td>Dobrze! Idź dalej!</td></tr>
+      <tr><td>5</td><td>Znakomicie!</td></tr>
+      <tr><td>27</td><td>To poprawny numer!</td></tr>
+      <tr><td>275</td><td>Zgadza się!</td></tr>
+      <tr><td>157</td><td>Brawo!</td></tr>
+      <tr><td>146</td><td>Dobrze!</td></tr>
+      <tr><td>14</td><td>Poprawna odpowiedź!</td></tr>
+      <tr><td>55340252</td><td>Brawo! To była trudna!</td></tr>
+      <tr><td>291</td><td>Zgadza się! Przejdź dalej.</td></tr>
+      <tr><td>164</td><td>Tak jest!</td></tr>
+      <tr><td>245</td><td>Super!</td></tr>
+      <tr><td>64229136</td><td>Udało się!</td></tr>
+      <tr><td>21</td><td>To prawda!</td></tr>
+      <tr><td>111</td><td>Kod przyjęty!</td></tr>
+      <tr><td>40</td><td>To się zgadza!</td></tr>
+      <tr><td>888</td><td>Szuflada otwarta!</td></tr>
+      <tr><td>9</td><td>Dobrze!</td></tr>
+      <tr><td>7</td><td>Poprawnie!</td></tr>
+    </tbody>
+  </table>
 
-    let current = 0; // indeks bieżącego etapu
+  <script>
+    // Zbuduj mapę z danych w tabeli (łatwa edycja bez zmian JS)
+    function buildAnswerMap() {
+      const map = {};
+      document.querySelectorAll('#answerTable tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const key = cells[0].textContent.trim();
+        const msg = cells[1].textContent.trim();
+        map[key] = msg;
+      });
+      return map;
+    }
+
+    const answerMap = buildAnswerMap();
 
     const form = document.getElementById('codeForm');
     const input = document.getElementById('codeInput');
@@ -64,16 +104,10 @@
         return;
       }
 
-      // Sprawdzenie odpowiedzi
-      if (current < answers.length && answer === answers[current]) {
-        responseDiv.innerHTML = "&para; Brawo! Przejdź do następnej karty!";
+      // Sprawdzenie odpowiedzi w mapie
+      if (answerMap.hasOwnProperty(answer)) {
+        responseDiv.innerHTML = "&para; " + answerMap[answer];
         responseDiv.classList.add('good');
-        current++;
-        // Zakończenie gry
-        if (current === answers.length) {
-          responseDiv.innerHTML += "<br>Gratulacje! Ukończyłeś wszystkie etapy.";
-          form.style.display = 'none';
-        }
       } else {
         responseDiv.innerHTML = "<img src='FAIL.PNG' alt='Fail' class='fail-icon'/>";
         responseDiv.classList.add('bad');
