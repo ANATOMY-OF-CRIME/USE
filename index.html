@@ -35,7 +35,7 @@
     <img src="assets/GEARS.png" alt="Gears" class="top-icon" />
 
     <form id="codeForm" autocomplete="off">
-      <input type="text" id="codeInput" maxlength="12" pattern="[A-Za-z0-9]*" placeholder="······" required>
+      <input type="text" id="codeInput" maxlength="12" pattern="[A-Za-z0-9]*" placeholder="······" autofocus required>
       <br>
       <button type="submit" class="check-btn" aria-label="Sprawdź">&#10148;</button>
     </form>
@@ -50,10 +50,10 @@
   </tbody></table>
 
   <script>
-    // Stwórz mapę odpowiedzi
+    // Buduj mapę odpowiedzi
     const answerMap = {};
     document.querySelectorAll('#answerTable tbody tr').forEach(r => {
-      const [k, m] = r.querySelectorAll('td');
+      const [k,m] = r.querySelectorAll('td');
       answerMap[k.textContent.trim().toUpperCase()] = m.textContent.trim();
     });
 
@@ -64,19 +64,14 @@
     form.addEventListener('submit', e => {
       e.preventDefault();
       const ans = input.value.trim().toUpperCase();
-      responseDiv.className = "";
+      responseDiv.className = '';
       document.body.classList.remove('fail-bg');
 
       // Walidacja
-      if (!/^[A-Za-z0-9]{1,12}$/.test(ans)) {
+      if(!/^[A-Za-z0-9]{1,12}$/.test(ans)){
         responseDiv.textContent = 'Kod musi mieć 1‑12 znaków (litery lub cyfry).';
         responseDiv.classList.add('neutral');
-        input.value = '';
-        input.focus();
-        return;
-      }
-
-      if (ans in answerMap) {
+      } else if(ans in answerMap){
         responseDiv.innerHTML = `&#10148; ${answerMap[ans]}`;
         responseDiv.classList.add('good');
       } else {
@@ -85,9 +80,10 @@
         responseDiv.classList.add('bad');
       }
 
-      // Zresetuj pole i pokaż je ponownie (formularz nigdy nie znika)
+      // Ukryj klawiaturę mobilną po zatwierdzeniu
+      input.blur();
+      // Wyczyść pole (ale nie ustawiaj focus ponownie — użytkownik kliknie, gdy będzie chciał wpisać)
       input.value = '';
-      input.focus();
     });
   </script>
 </body>
