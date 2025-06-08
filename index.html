@@ -43,22 +43,51 @@
   </div>
 
   <table id="answerTable"><tbody>
-      <tr><td>65</td><td>12</td></tr>
-      <tr><td>207</td><td>14</td></tr>
-      <tr><td>ABC123</td><td>16</td></tr>
-      <tr><td>XYZ</td><td>17</td></tr>
+      <tr><td>65</td><td>Brawo! Przejdź do następnej karty!</td></tr>
+      <tr><td>207</td><td>Świetnie, kolejny etap za Tobą!</td></tr>
+      <tr><td>ABC123</td><td>Przykład literowo‑cyfrowy poprawny!</td></tr>
+      <tr><td>XYZ</td><td>Krótki kod literowy działa!</td></tr>
   </tbody></table>
 
   <script>
-    const answerMap={};document.querySelectorAll('#answerTable tbody tr').forEach(r=>{const[k,m]=r.querySelectorAll('td');answerMap[k.textContent.trim().toUpperCase()]=m.textContent.trim()});
-    const form=document.getElementById('codeForm');const input=document.getElementById('codeInput');const responseDiv=document.getElementById('response');
+    // Stwórz mapę odpowiedzi
+    const answerMap = {};
+    document.querySelectorAll('#answerTable tbody tr').forEach(r => {
+      const [k, m] = r.querySelectorAll('td');
+      answerMap[k.textContent.trim().toUpperCase()] = m.textContent.trim();
+    });
 
-    form.addEventListener('submit',e=>{e.preventDefault();const ans=input.value.trim().toUpperCase();responseDiv.className="";document.body.classList.remove('fail-bg');
-      if(!/^[A-Za-z0-9]{1,12}$/.test(ans)){responseDiv.textContent='Kod musi mieć 1‑12 znaków (litery lub cyfry).';responseDiv.classList.add('neutral');return;}
-      if(ans in answerMap){responseDiv.innerHTML=`&#10148; ${answerMap[ans]}`;responseDiv.classList.add('good');}
-      else{document.body.classList.add('fail-bg');responseDiv.innerHTML="<img src='assets/FAIL.png' alt='Fail' class='fail-icon'/>";responseDiv.classList.add('bad');}
-      /* Ukryj formularz po zatwierdzeniu */
-      form.style.display='none';
+    const form = document.getElementById('codeForm');
+    const input = document.getElementById('codeInput');
+    const responseDiv = document.getElementById('response');
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const ans = input.value.trim().toUpperCase();
+      responseDiv.className = "";
+      document.body.classList.remove('fail-bg');
+
+      // Walidacja
+      if (!/^[A-Za-z0-9]{1,12}$/.test(ans)) {
+        responseDiv.textContent = 'Kod musi mieć 1‑12 znaków (litery lub cyfry).';
+        responseDiv.classList.add('neutral');
+        input.value = '';
+        input.focus();
+        return;
+      }
+
+      if (ans in answerMap) {
+        responseDiv.innerHTML = `&#10148; ${answerMap[ans]}`;
+        responseDiv.classList.add('good');
+      } else {
+        document.body.classList.add('fail-bg');
+        responseDiv.innerHTML = "<img src='assets/FAIL.png' alt='Fail' class='fail-icon'/>";
+        responseDiv.classList.add('bad');
+      }
+
+      // Zresetuj pole i pokaż je ponownie (formularz nigdy nie znika)
+      input.value = '';
+      input.focus();
     });
   </script>
 </body>
