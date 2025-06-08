@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Odpowiedz na pytanie</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; }
+    .container { max-width: 450px; margin: 60px auto; padding: 2em; background: #fff; border-radius: 14px; box-shadow: 0 4px 16px #0002; text-align:center; }
+    .top-icon { display:block; margin:0 auto 1.2em; max-width:140px; }
+
+    input[type="text"] { font-size: 1.4em; padding: 0.3em; width: 95%; margin: 0.5em 0; }
+    button { font-size: 1.1em; padding: 0.4em 1.2em; border-radius: 8px; margin-top: 0.5em;}
+
+    #response {
+      margin-top: 1.3em; font-size: 1.2em; min-height: 2em;
+      padding: 0.7em 1em; border-radius: 8px; display: inline-block;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    #question { margin-bottom: 0.8em; font-weight: bold; }
+    .good { background: #d8f5dd; color: #227733; border: 1px solid #87d39b; }
+    .bad  { background: #fadada; color: transparent; border: 1px solid #e99898; }
+    .neutral { background: #f1f1f1; color: #333; border: 1px solid #ccc; }
+
+    .fail-icon { display:block; margin:0 auto; max-width:120px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Duża ikona na górze -->
+    <img src="GEARS.PNG" alt="Gears" class="top-icon" />
+
+    <h2 id="question">Pytanie</h2>
+    <form id="codeForm" autocomplete="off">
+      <input type="text" id="codeInput" maxlength="9" pattern="\\d*" placeholder="Wpisz odpowiedź..." autofocus required>
+      <br>
+      <button type="submit">Sprawdź</button>
+    </form>
+    <div id="response"></div>
+  </div>
+
+  <script>
+    // Mapa pytań: numer pytania => { prompt, correct, msgSuccess, msgFail }
+    const questions = {
+      "1": { prompt: "W której strefie jest podejrzany?", correct: "65", msgSuccess: "Brawo! Przejdź do następnej karty!", msgFail: "To nie jest poprawna odpowiedź do tego pytania." },
+      "2": { prompt: "Z której strefy podejrzany wyruszył w drogę?", correct: "207", msgSuccess: "Brawo! Przejdź do następnej karty!", msgFail: "Niestety, spróbuj jeszcze raz." },
+      "3": { prompt: "Gdzie jest tajemniczy sprzedawca?", correct: "115", msgSuccess: "Świetnie, mamy go!Przejdź do następnej karty!", msgFail: "Zła odpowiedź." },
+      "4": { prompt: "Ile kudłatych krów jest na mapie?", correct: "5", msgSuccess: "Brawo! Przejdź do następnej karty!", msgFail: "Niepoprawna wartość!" },
+      "5": { prompt: "Gdzie jest skrzynia z kryształem?", correct: "27", msgSuccess: "To jest poprawny numer!Przejdź do następnej karty!", msgFail: "Spróbuj jeszcze raz." },
+      "6": { prompt: "Gdzie są tajemnicze stwory?", correct: "275", msgSuccess: "Zgadza się!Przejdź do następnej karty!", msgFail: "Nie tym razem. spróbuj jeszcze raz" },
+      "7": { prompt: "Wskaż gdzie są potwory przed przemianą.", correct: "157", msgSuccess: "Brawo, Przejdź do następnej karty!", msgFail: "Niestety, spróbuj jeszcze raz." },
+      "8": { prompt: "Gdzie jest podejrzany o dolanie eliksiru?", correct: "146", msgSuccess: "Dobrze!Przejdź do następnej karty!", msgFail: "Niestety, spróbuj jeszcze raz." },
+      "9": { prompt: "Wskaż miejsce gdzie powstał eliksir", correct: "14", msgSuccess: "Poprawna odpowiedź!Przejdź do następnej karty!", msgFail: "" },
+      "10": { prompt: "Podaj lokacje wszystkich składników", correct: "55340252", msgSuccess: "Brawo!Przejdź do następnej karty", msgFail: "Źle! Spróbuj jeszcze raz" },
+      "11": { prompt: "Wskaż miejsce osoby odpowiedzialnej za intrygę", correct: "291", msgSuccess: "Zgadza się!Przejdź do następnej karty", msgFail: "Zła odpowiedź." },
+      "12": { prompt: "Wskaż miejsce poszukiwanego chochlika", correct: "164", msgSuccess: "Zgadza się!Przejdź do następnej karty", msgFail: "Zła odpowiedź." },
+      "13": { prompt: "Gdzie jest skrzynia chochlika?", correct: "245", msgSuccess: "Dobrze!Przejdź do następnej karty", msgFail: "Spróbuj ponownie." },
+      "14": { prompt: "Podaj lokacj wszystkich 3 run", correct: "64229136", msgSuccess: "Zgadza się!Przejdź do następnej karty", msgFail: "Spróbuj jeszcze raz." },
+      "15": { prompt: "Ile kroków do wyjścia?", correct: "21", msgSuccess: "To prawda!", msgFail: "Spróbuj jeszcze raz." },
+      "16": { prompt: "Podaj kod awaryjny.", correct: "111", msgSuccess: "Kod przyjęty!", msgFail: "Niepoprawny kod." },
+      "17": { prompt: "Ile jest złotych monet w kufrze?", correct: "40", msgSuccess: "To się zgadza!", msgFail: "To nie jest dobra liczba." },
+      "18": { prompt: "Podaj kod do tajnej szuflady.", correct: "888", msgSuccess: "Szuflada otwarta!", msgFail: "Zły kod." },
+      "19": { prompt: "Numer stolika przy oknie?", correct: "9", msgSuccess: "Dobrze!", msgFail: "Źle." },
+      "20": { prompt: "Ile różnych ziół jest w skrzynce?", correct: "7", msgSuccess: "Poprawnie!", msgFail: "Spróbuj ponownie." }
+    };
+
+    // Pobiera parametr z adresu URL (np. ?pytanie=3)
+    function getQueryParam(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    // Ustal pytanie lub ustaw obiekt domyślny
+    const nrPytania = getQueryParam('pytanie');
+    const question = questions[nrPytania] || {
+      prompt: "Brak przypisanego pytania – wpisz odpowiedź poniżej:",
+      correct: null,
+      msgSuccess: "",
+      msgFail: ""
+    };
+
+    // Wyświetl treść pytania (zawsze pokazujemy formularz)
+    document.getElementById('question').textContent = question.prompt;
+
+    document.getElementById('codeForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const answerInput = document.getElementById('codeInput');
+      const answer = answerInput.value.trim();
+      const responseDiv = document.getElementById('response');
+      responseDiv.className = ""; // reset klas
+
+      // Walidacja formatu (1-9 cyfr)
+      if (!/^\\d{1,9}$/.test(answer)) {
+        responseDiv.textContent = "Odpowiedź musi być liczbą (1-9 cyfr).";
+        responseDiv.classList.add("neutral");
+        answerInput.focus();
+        return;
+      }
+
+      // Jeśli brak poprawnej odpowiedzi w danych, pokazujemy neutralny komunikat
+      if (question.correct === null) {
+        responseDiv.textContent = "Tego pytania nie można zweryfikować (brak danych).";
+        responseDiv.classList.add("neutral");
+      } else if (answer === question.correct) {
+        responseDiv.innerHTML = "&para; " + question.msgSuccess;
+        responseDiv.classList.add("good");
+      } else {
+        responseDiv.innerHTML = "<img src='FAIL.PNG' alt='Fail' class='fail-icon'/>";
+        responseDiv.classList.add("bad");
+      }
+
+      // Czyszczenie pola do kolejnej próby
+      answerInput.value = "";
+      answerInput.focus();
+    });
+  </script>
+</body>
+</html>
