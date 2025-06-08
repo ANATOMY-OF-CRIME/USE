@@ -5,9 +5,14 @@
   <title>Kod odpowiedzi</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial, sans-serif; background: #f9f9f9; }
-    .container { max-width: 450px; margin: 60px auto; padding: 2em; background: #fff; border-radius: 14px; box-shadow: 0 4px 16px #0002; text-align:center; }
+    /* Podstawowe kolory i układ */
+    body { font-family: Arial, sans-serif; background: #f9f9f9; transition: background 0.3s; }
+    .container { max-width: 450px; margin: 60px auto; padding: 2em; background: #fff; border-radius: 14px; box-shadow: 0 4px 16px #0002; text-align:center; transition: background 0.3s; }
     .top-icon { display:block; margin:0 auto 1.2em; max-width:140px; }
+
+    /* Tło przy błędnej odpowiedzi */
+    body.fail-bg { background:#d32f2f; }
+    body.fail-bg .container { background:#ffebee; }
 
     /* Input z kropkowanym placeholderem */
     input[type="text"] {
@@ -16,7 +21,7 @@
     }
     input::placeholder { color:#bbb; font-size:0.9em; letter-spacing:0.3em; }
 
-    /* Przyciski */
+    /* Przycisk (strzałka) */
     .check-btn {
       width:60px; height:60px; border-radius:50%; border:none;
       background:#227733; color:#fff; font-size:2em; cursor:pointer;
@@ -25,6 +30,7 @@
     }
     .check-btn:hover { background:#1b5d29; }
 
+    /* Pole z odpowiedzią */
     #response {
       margin-top: 1.3em; font-size: 1.2em; min-height: 2em;
       padding: 0.7em 1em; border-radius: 8px; display: inline-block; max-width:100%;
@@ -33,7 +39,7 @@
 
     .ok-icon { font-size:1.5em; margin-right:0.3em; }
     .good { background: #d8f5dd; color: #227733; border: 1px solid #87d39b; }
-    .bad  { background: #fadada; color: transparent; border: 1px solid #e99898; }
+    .bad  { background: transparent; color: transparent; border:none; }
     .neutral { background: #f1f1f1; color: #333; border: 1px solid #ccc; }
     .fail-icon { display:block; margin:0 auto; max-width:120px; }
 
@@ -48,9 +54,8 @@
 
     <!-- Formularz -->
     <form id="codeForm" autocomplete="off">
-      <input type="text" id="codeInput" maxlength="9" pattern="\d*" placeholder="······" autofocus required>
+      <input type="text" id="codeInput" maxlength="12" pattern="[A-Za-z0-9]*" placeholder="······" autofocus required>
       <br>
-      <!-- Strzałka zamiast ptaszka (ptaszek pojawi się tylko na sukces) -->
       <button type="submit" class="check-btn" aria-label="Sprawdź">&#10148;</button>
     </form>
     <div id="response"></div>
@@ -61,47 +66,35 @@
     <tbody>
       <tr><td>65</td><td>Brawo! Przejdź do następnej karty!</td></tr>
       <tr><td>207</td><td>Świetnie, kolejny etap za Tobą!</td></tr>
-      <tr><td>115</td><td>Dobrze! Idź dalej!</td></tr>
-      <tr><td>5</td><td>Znakomicie!</td></tr>
-      <tr><td>27</td><td>To poprawny numer!</td></tr>
-      <tr><td>275</td><td>Zgadza się!</td></tr>
-      <tr><td>157</td><td>Brawo!</td></tr>
-      <tr><td>146</td><td>Dobrze!</td></tr>
-      <tr><td>14</td><td>Poprawna odpowiedź!</td></tr>
-      <tr><td>55340252</td><td>Brawo! To była trudna!</td></tr>
-      <tr><td>291</td><td>Zgadza się! Przejdź dalej.</td></tr>
-      <tr><td>164</td><td>Tak jest!</td></tr>
-      <tr><td>245</td><td>Super!</td></tr>
-      <tr><td>64229136</td><td>Udało się!</td></tr>
-      <tr><td>21</td><td>To prawda!</td></tr>
-      <tr><td>111</td><td>Kod przyjęty!</td></tr>
-      <tr><td>40</td><td>To się zgadza!</td></tr>
-      <tr><td>888</td><td>Szuflada otwarta!</td></tr>
-      <tr><td>9</td><td>Dobrze!</td></tr>
-      <tr><td>7</td><td>Poprawnie!</td></tr>
+      <tr><td>ABC123</td><td>Przykład literowo‑cyfrowy poprawny!</td></tr>
+      <tr><td>XYZ</td><td>Krótki kod literowy działa!</td></tr>
     </tbody>
   </table>
 
   <script>
-    // Buduj mapę { odpowiedź: komunikat }
+    // Buduj mapę { odpowiedź: komunikat } (klucze zamieniamy na wielkie litery)
     const answerMap = {};
     document.querySelectorAll('#answerTable tbody tr').forEach(row => {
       const [keyCell, msgCell] = row.querySelectorAll('td');
-      answerMap[keyCell.textContent.trim()] = msgCell.textContent.trim();
+      answerMap[keyCell.textContent.trim().toUpperCase()] = msgCell.textContent.trim();
     });
 
-    const form = document.getElementById('codeForm');
-    const input = document.getElementById('codeInput');
-    const responseDiv = document.getElementById('response');
+    const form       = document.getElementById('codeForm');
+    const input      = document.getElementById('codeInput');
+    const responseDiv= document.getElementById('response');
 
     form.addEventListener('submit', e => {
       e.preventDefault();
-      const answer = input.value.trim();
+      const rawAnswer = input.value.trim();
+      const answer    = rawAnswer.toUpperCase();
       responseDiv.className = "";
 
-      // Walidacja 1‑9 cyfr
-      if (!/^\d{1,9}$/.test(answer)) {
-        responseDiv.textContent = "Odpowiedź musi być liczbą (1-9 cyfr).";
+      // Usuń czerwoną klasę tła z poprzedniej próby
+      document.body.classList.remove('fail-bg');
+
+      // Walidacja: 1‑12 znaków, litery lub cyfry
+      if (!/^[A-Za-z0-9]{1,12}$/.test(answer)) {
+        responseDiv.textContent = "Kod musi mieć 1‑12 znaków (litery lub cyfry).";
         responseDiv.classList.add('neutral');
         input.focus();
         return;
@@ -111,6 +104,8 @@
         responseDiv.innerHTML = `<span class='ok-icon'>&#10004;</span>${answerMap[answer]}`;
         responseDiv.classList.add('good');
       } else {
+        // Błędna odpowiedź: całe tło czerwone + ikona FAIL
+        document.body.classList.add('fail-bg');
         responseDiv.innerHTML = "<img src='assets/FAIL.png' alt='Fail' class='fail-icon'/>";
         responseDiv.classList.add('bad');
       }
