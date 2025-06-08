@@ -32,13 +32,17 @@
 
     /* Pole z odpowiedzią */
     #response {
-      margin-top: 1.3em; font-size: 1.2em; min-height: 2em;
+      margin-top: 1.3em; min-height: 2em;
       padding: 0.7em 1em; border-radius: 8px; display: inline-block; max-width:100%;
       transition: background 0.3s, color 0.3s;
     }
 
-    .ok-icon { font-size:1.5em; margin-right:0.3em; }
-    .good { background: #d8f5dd; color: #227733; border: 1px solid #87d39b; }
+    /* Sukces: 2× większe litery i zielone tło */
+    .good {
+      background: #d8f5dd; color: #227733; border: 1px solid #87d39b;
+      font-size: 2em; /* 2× większe */
+    }
+
     .bad  { background: transparent; color: transparent; border:none; }
     .neutral { background: #f1f1f1; color: #333; border: 1px solid #ccc; }
     .fail-icon { display:block; margin:0 auto; max-width:120px; }
@@ -64,15 +68,15 @@
   <!-- TABELA ODPOWIEDZI (łatwa edycja) -->
   <table id="answerTable">
     <tbody>
-      <tr><td>65</td><td>§12</td></tr>
-      <tr><td>207</td><td>Świetnie, kolejny etap za Tobą!</td></tr>
-      <tr><td>ABC123</td><td>Przykład literowo‑cyfrowy poprawny!</td></tr>
-      <tr><td>XYZ</td><td>Krótki kod literowy działa!</td></tr>
+      <tr><td>65</td><td>§22</td></tr>
+      <tr><td>207</td><td>§42</td></tr>
+      <tr><td>ABC123</td><td>§21</td></tr>
+      <tr><td>XYZ</td><td>§122</td></tr>
     </tbody>
   </table>
 
   <script>
-    // Buduj mapę { odpowiedź: komunikat } (klucze zamieniamy na wielkie litery)
+    // Buduj mapę { odpowiedź: komunikat } (klucze na wielkie litery)
     const answerMap = {};
     document.querySelectorAll('#answerTable tbody tr').forEach(row => {
       const [keyCell, msgCell] = row.querySelectorAll('td');
@@ -101,7 +105,8 @@
       }
 
       if (answer in answerMap) {
-        responseDiv.innerHTML = `<span class='ok-icon'>&#10004;</span>${answerMap[answer]}`;
+        // Strzałka wskazująca na odpowiedź
+        responseDiv.innerHTML = `&#10148; ${answerMap[answer]}`;
         responseDiv.classList.add('good');
       } else {
         // Błędna odpowiedź: całe tło czerwone + ikona FAIL
